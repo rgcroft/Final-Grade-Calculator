@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .weight {
+            color: #764ba2;
+            font-size: 12px;
+            font-weight: normal;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 30px;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.4s ease;
+        }
+
+        .results.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .result-card {
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .exam-result {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .final-result {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .result-label {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .result-score {
+            color: white;
+            font-size: 42px;
+            font-weight: bold;
+        }
+
+        .breakdown {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .breakdown-item:last-child {
+            margin-bottom: 0;
+            padding-top: 8px;
+            border-top: 2px solid #ddd;
+            font-weight: 600;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Grade Calculator</h1>
+        <p class="subtitle">Calculate your exam score and final grade</p>
+        
+        <form id="gradeForm">
+            <div class="section">
+                <div class="section-title">📝 Exam Scores</div>
+                
+                <div class="input-group">
+                    <label for="written">Written Portion <span class="weight">(60%)</span></label>
+                    <input type="number" id="written" step="0.01" placeholder="Enter score" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="multipleChoice">Multiple Choice <span class="weight">(40%)</span></label>
+                    <input type="number" id="multipleChoice" step="0.01" placeholder="Enter score" required>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📚 Semester Grades</div>
+                
+                <div class="input-group">
+                    <label for="semester1">Semester 1 Grade <span class="weight">(40%)</span></label>
+                    <input type="number" id="semester1" step="0.01" placeholder="Enter grade" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="semester2">Semester 2 Grade <span class="weight">(40%)</span></label>
+                    <input type="number" id="semester2" step="0.01" placeholder="Enter grade" required>
+                </div>
+            </div>
+
+            <button type="submit" class="calculate-btn">Calculate Grades</button>
+        </form>
+
+        <div class="results" id="results">
+            <div class="result-card exam-result">
+                <div class="result-label">Exam Score</div>
+                <div class="result-score" id="examScore">0</div>
+                <div class="breakdown">
+                    <div class="breakdown-item">
+                        <span>Written (60%):</span>
+                        <span id="writtenCalc">0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Multiple Choice (40%):</span>
+                        <span id="mcCalc">0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Total Exam Score:</span>
+                        <span id="examTotal">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card final-result">
+                <div class="result-label">Final Course Grade</div>
+                <div class="result-score" id="finalGrade">0</div>
+                <div class="breakdown">
+                    <div class="breakdown-item">
+                        <span>Semester 1 (40%):</span>
+                        <span id="sem1Calc">0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Semester 2 (40%):</span>
+                        <span id="sem2Calc">0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Exam (20%):</span>
+                        <span id="examCalc">0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Final Grade:</span>
+                        <span id="finalTotal">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('gradeForm');
+        const resultsDiv = document.getElementById('results');
+        
+        const inputs = {
+            written: document.getElementById('written'),
+            multipleChoice: document.getElementById('multipleChoice'),
+            semester1: document.getElementById('semester1'),
+            semester2: document.getElementById('semester2')
+        };
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const written = parseFloat(inputs.written.value);
+            const mc = parseFloat(inputs.multipleChoice.value);
+            const sem1 = parseFloat(inputs.semester1.value);
+            const sem2 = parseFloat(inputs.semester2.value);
+
+            if (isNaN(written) || isNaN(mc) || isNaN(sem1) || isNaN(sem2)) {
+                alert('Please enter valid numbers for all fields');
+                return;
+            }
+
+            // Calculate exam score (Written 60% + MC 40%)
+            const examScore = (written * 0.6) + (mc * 0.4);
+            
+            // Calculate final grade (Sem1 40% + Sem2 40% + Exam 20%)
+            const finalGrade = (sem1 * 0.4) + (sem2 * 0.4) + (examScore * 0.2);
+
+            // Update exam breakdown
+            document.getElementById('writtenCalc').textContent = (written * 0.6).toFixed(2);
+            document.getElementById('mcCalc').textContent = (mc * 0.4).toFixed(2);
+            document.getElementById('examTotal').textContent = examScore.toFixed(2);
+            document.getElementById('examScore').textContent = examScore.toFixed(2);
+
+            // Update final grade breakdown
+            document.getElementById('sem1Calc').textContent = (sem1 * 0.4).toFixed(2);
+            document.getElementById('sem2Calc').textContent = (sem2 * 0.4).toFixed(2);
+            document.getElementById('examCalc').textContent = (examScore * 0.2).toFixed(2);
+            document.getElementById('finalTotal').textContent = finalGrade.toFixed(2);
+            document.getElementById('finalGrade').textContent = finalGrade.toFixed(2);
+
+            resultsDiv.classList.add('show');
+        });
+
+        // Hide results when inputs change
+        Object.values(inputs).forEach(input => {
+            input.addEventListener('input', function() {
+                resultsDiv.classList.remove('show');
+            });
+        });
+    </script>
+</body>
+</html>
