@@ -93,6 +93,12 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        input[type="number"]:disabled {
+            background: #f0f0f0;
+            color: #999;
+            cursor: not-allowed;
+        }
+
         .auto-calculated {
             display: flex;
             align-items: center;
@@ -109,6 +115,59 @@
         .auto-calculated .value {
             color: #667eea;
             font-size: 20px;
+        }
+
+        .toggle-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-option:hover {
+            background: #f8f9fa;
+        }
+
+        .toggle-option input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .toggle-option label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .exam-score-section {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .exam-score-title {
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .exam-score-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
         }
 
         .calculate-btn {
@@ -213,6 +272,20 @@
                     <label for="multipleChoice">Multiple Choice <span class="weight">(40%)</span></label>
                     <input type="number" id="multipleChoice" step="0.01" placeholder="Enter score">
                 </div>
+
+                <div class="toggle-option">
+                    <input type="checkbox" id="manualExamToggle">
+                    <label for="manualExamToggle">Enter exam score manually (for classes without 60/40 split)</label>
+                </div>
+            </div>
+
+            <div class="exam-score-section">
+                <div class="exam-score-title">Total Exam Score</div>
+                <div class="exam-score-value" id="examScoreDisplay">--</div>
+                <div class="input-group" id="manualExamInput" style="display: none; margin-top: 15px;">
+                    <label for="manualExam">Enter Exam Score Manually</label>
+                    <input type="number" id="manualExam" step="0.01" placeholder="Enter exam score">
+                </div>
             </div>
 
             <div class="section">
@@ -226,14 +299,6 @@
                 <div class="input-group">
                     <label for="quarter4">Quarter 4 Grade <span class="weight">(40%)</span></label>
                     <input type="number" id="quarter4" step="0.01" placeholder="Enter grade" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Exam Score <span class="weight">(20% - auto-calculated)</span></label>
-                    <div class="auto-calculated">
-                        <span>Calculated from exam scores above</span>
-                        <span class="value" id="examScoreDisplay">--</span>
-                    </div>
                 </div>
             </div>
 
@@ -274,23 +339,67 @@
             written: document.getElementById('written'),
             multipleChoice: document.getElementById('multipleChoice'),
             quarter3: document.getElementById('quarter3'),
-            quarter4: document.getElementById('quarter4')
+            quarter4: document.getElementById('quarter4'),
+            manualExam: document.getElementById('manualExam')
         };
 
         const examScoreDisplay = document.getElementById('examScoreDisplay');
+        const manualExamToggle = document.getElementById('manualExamToggle');
+        const manualExamInput = document.getElementById('manualExamInput');
         let currentExamScore = null;
+        let isManualMode = false;
+
+        // Toggle between auto and manual exam score entry
+        manualExamToggle.addEventListener('change', function() {
+            isManualMode = this.checked;
+            
+            if (isManualMode) {
+                // Show manual input, disable auto inputs
+                manualExamInput.style.display = 'block';
+                inputs.written.disabled = true;
+                inputs.multipleChoice.disabled = true;
+                inputs.written.value = '';
+                inputs.multipleChoice.value = '';
+                
+                // Update from manual input if it has a value
+                updateExamScoreFromManual();
+            } else {
+                // Hide manual input, enable auto inputs
+                manualExamInput.style.display = 'none';
+                inputs.written.disabled = false;
+                inputs.multipleChoice.disabled = false;
+                inputs.manualExam.value = '';
+                
+                // Update from auto calculation
+                updateExamScore();
+            }
+        });
 
         // Auto-calculate exam score when written or MC changes
         function updateExamScore() {
+            if (isManualMode) return;
+            
             const written = parseFloat(inputs.written.value);
             const mc = parseFloat(inputs.multipleChoice.value);
 
             if (!isNaN(written) && !isNaN(mc)) {
                 currentExamScore = (written * 0.6) + (mc * 0.4);
                 examScoreDisplay.textContent = currentExamScore.toFixed(2);
-            } else if (!isNaN(written) || !isNaN(mc)) {
+            } else {
                 examScoreDisplay.textContent = '--';
                 currentExamScore = null;
+            }
+        }
+
+        // Update exam score from manual input
+        function updateExamScoreFromManual() {
+            if (!isManualMode) return;
+            
+            const manual = parseFloat(inputs.manualExam.value);
+            
+            if (!isNaN(manual)) {
+                currentExamScore = manual;
+                examScoreDisplay.textContent = currentExamScore.toFixed(2);
             } else {
                 examScoreDisplay.textContent = '--';
                 currentExamScore = null;
@@ -299,6 +408,7 @@
 
         inputs.written.addEventListener('input', updateExamScore);
         inputs.multipleChoice.addEventListener('input', updateExamScore);
+        inputs.manualExam.addEventListener('input', updateExamScoreFromManual);
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -312,7 +422,11 @@
             }
 
             if (currentExamScore === null) {
-                alert('Please enter both exam scores (Written and Multiple Choice)');
+                if (isManualMode) {
+                    alert('Please enter your exam score');
+                } else {
+                    alert('Please enter both exam scores (Written and Multiple Choice)');
+                }
                 return;
             }
 
