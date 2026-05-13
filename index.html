@@ -93,6 +93,24 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .auto-calculated {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .auto-calculated .value {
+            color: #667eea;
+            font-size: 20px;
+        }
+
         .calculate-btn {
             width: 100%;
             padding: 16px;
@@ -133,10 +151,6 @@
             border-radius: 15px;
             text-align: center;
             margin-bottom: 15px;
-        }
-
-        .exam-result {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         .final-result {
@@ -192,63 +206,52 @@
                 
                 <div class="input-group">
                     <label for="written">Written Portion <span class="weight">(60%)</span></label>
-                    <input type="number" id="written" step="0.01" placeholder="Enter score" required>
+                    <input type="number" id="written" step="0.01" placeholder="Enter score">
                 </div>
 
                 <div class="input-group">
                     <label for="multipleChoice">Multiple Choice <span class="weight">(40%)</span></label>
-                    <input type="number" id="multipleChoice" step="0.01" placeholder="Enter score" required>
+                    <input type="number" id="multipleChoice" step="0.01" placeholder="Enter score">
                 </div>
             </div>
 
             <div class="section">
-                <div class="section-title">📚 Semester Grades</div>
+                <div class="section-title">📚 Quarter Grades</div>
                 
                 <div class="input-group">
-                    <label for="semester1">Semester 1 Grade <span class="weight">(40%)</span></label>
-                    <input type="number" id="semester1" step="0.01" placeholder="Enter grade" required>
+                    <label for="quarter3">Quarter 3 Grade <span class="weight">(40%)</span></label>
+                    <input type="number" id="quarter3" step="0.01" placeholder="Enter grade" required>
                 </div>
 
                 <div class="input-group">
-                    <label for="semester2">Semester 2 Grade <span class="weight">(40%)</span></label>
-                    <input type="number" id="semester2" step="0.01" placeholder="Enter grade" required>
+                    <label for="quarter4">Quarter 4 Grade <span class="weight">(40%)</span></label>
+                    <input type="number" id="quarter4" step="0.01" placeholder="Enter grade" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Exam Score <span class="weight">(20% - auto-calculated)</span></label>
+                    <div class="auto-calculated">
+                        <span>Calculated from exam scores above</span>
+                        <span class="value" id="examScoreDisplay">--</span>
+                    </div>
                 </div>
             </div>
 
-            <button type="submit" class="calculate-btn">Calculate Grades</button>
+            <button type="submit" class="calculate-btn">Calculate Final Grade</button>
         </form>
 
         <div class="results" id="results">
-            <div class="result-card exam-result">
-                <div class="result-label">Exam Score</div>
-                <div class="result-score" id="examScore">0</div>
-                <div class="breakdown">
-                    <div class="breakdown-item">
-                        <span>Written (60%):</span>
-                        <span id="writtenCalc">0</span>
-                    </div>
-                    <div class="breakdown-item">
-                        <span>Multiple Choice (40%):</span>
-                        <span id="mcCalc">0</span>
-                    </div>
-                    <div class="breakdown-item">
-                        <span>Total Exam Score:</span>
-                        <span id="examTotal">0</span>
-                    </div>
-                </div>
-            </div>
-
             <div class="result-card final-result">
                 <div class="result-label">Final Course Grade</div>
                 <div class="result-score" id="finalGrade">0</div>
                 <div class="breakdown">
                     <div class="breakdown-item">
-                        <span>Semester 1 (40%):</span>
-                        <span id="sem1Calc">0</span>
+                        <span>Quarter 3 (40%):</span>
+                        <span id="q3Calc">0</span>
                     </div>
                     <div class="breakdown-item">
-                        <span>Semester 2 (40%):</span>
-                        <span id="sem2Calc">0</span>
+                        <span>Quarter 4 (40%):</span>
+                        <span id="q4Calc">0</span>
                     </div>
                     <div class="breakdown-item">
                         <span>Exam (20%):</span>
@@ -270,39 +273,56 @@
         const inputs = {
             written: document.getElementById('written'),
             multipleChoice: document.getElementById('multipleChoice'),
-            semester1: document.getElementById('semester1'),
-            semester2: document.getElementById('semester2')
+            quarter3: document.getElementById('quarter3'),
+            quarter4: document.getElementById('quarter4')
         };
+
+        const examScoreDisplay = document.getElementById('examScoreDisplay');
+        let currentExamScore = null;
+
+        // Auto-calculate exam score when written or MC changes
+        function updateExamScore() {
+            const written = parseFloat(inputs.written.value);
+            const mc = parseFloat(inputs.multipleChoice.value);
+
+            if (!isNaN(written) && !isNaN(mc)) {
+                currentExamScore = (written * 0.6) + (mc * 0.4);
+                examScoreDisplay.textContent = currentExamScore.toFixed(2);
+            } else if (!isNaN(written) || !isNaN(mc)) {
+                examScoreDisplay.textContent = '--';
+                currentExamScore = null;
+            } else {
+                examScoreDisplay.textContent = '--';
+                currentExamScore = null;
+            }
+        }
+
+        inputs.written.addEventListener('input', updateExamScore);
+        inputs.multipleChoice.addEventListener('input', updateExamScore);
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const written = parseFloat(inputs.written.value);
-            const mc = parseFloat(inputs.multipleChoice.value);
-            const sem1 = parseFloat(inputs.semester1.value);
-            const sem2 = parseFloat(inputs.semester2.value);
+            const q3 = parseFloat(inputs.quarter3.value);
+            const q4 = parseFloat(inputs.quarter4.value);
 
-            if (isNaN(written) || isNaN(mc) || isNaN(sem1) || isNaN(sem2)) {
-                alert('Please enter valid numbers for all fields');
+            if (isNaN(q3) || isNaN(q4)) {
+                alert('Please enter valid numbers for Quarter 3 and Quarter 4');
                 return;
             }
 
-            // Calculate exam score (Written 60% + MC 40%)
-            const examScore = (written * 0.6) + (mc * 0.4);
-            
-            // Calculate final grade (Sem1 40% + Sem2 40% + Exam 20%)
-            const finalGrade = (sem1 * 0.4) + (sem2 * 0.4) + (examScore * 0.2);
+            if (currentExamScore === null) {
+                alert('Please enter both exam scores (Written and Multiple Choice)');
+                return;
+            }
 
-            // Update exam breakdown
-            document.getElementById('writtenCalc').textContent = (written * 0.6).toFixed(2);
-            document.getElementById('mcCalc').textContent = (mc * 0.4).toFixed(2);
-            document.getElementById('examTotal').textContent = examScore.toFixed(2);
-            document.getElementById('examScore').textContent = examScore.toFixed(2);
+            // Calculate final grade (Q3 40% + Q4 40% + Exam 20%)
+            const finalGrade = (q3 * 0.4) + (q4 * 0.4) + (currentExamScore * 0.2);
 
             // Update final grade breakdown
-            document.getElementById('sem1Calc').textContent = (sem1 * 0.4).toFixed(2);
-            document.getElementById('sem2Calc').textContent = (sem2 * 0.4).toFixed(2);
-            document.getElementById('examCalc').textContent = (examScore * 0.2).toFixed(2);
+            document.getElementById('q3Calc').textContent = (q3 * 0.4).toFixed(2);
+            document.getElementById('q4Calc').textContent = (q4 * 0.4).toFixed(2);
+            document.getElementById('examCalc').textContent = (currentExamScore * 0.2).toFixed(2);
             document.getElementById('finalTotal').textContent = finalGrade.toFixed(2);
             document.getElementById('finalGrade').textContent = finalGrade.toFixed(2);
 
